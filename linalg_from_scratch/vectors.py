@@ -98,3 +98,11 @@ def are_orthogonal(u, v, epsilon=1e-10):
     """
 
     return abs(dot_product(u, v)) < epsilon
+def angle_between(u,v):
+    """
+    Find angle in radians between the two vectors.
+    """
+    if norm(u)*norm(v) != 0:
+        return math.acos(dot_product(u,v)/(norm(u)*norm(v)))
+    else:
+        raise ZeroDivisionError("Cannot use a zero vector.")

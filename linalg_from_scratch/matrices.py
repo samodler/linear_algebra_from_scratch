@@ -145,3 +145,23 @@ def get_column(A, column_index):
         column.append(A[i][column_index])
 
     return column
+
+def is_square(A):
+    """
+        Check if matrix A is squre - the nummber of rows and columns are equal, m=n. 
+    """
+    m,n = shape(A)
+    return m == n
+
+def trace(A):
+    """
+        Find the trace of matrix A.
+        Trace operation defined for square matrices only.
+    """
+    trace = 0
+    if is_square(A):
+        for i in range(len(A)):
+            trace += A[i][i]
+    else:
+        raise ValueError("Trace operation is only defined for square matrices.")
+    return trace

@@ -148,15 +148,15 @@ def get_column(A, column_index):
 
 def is_square(A):
     """
-        Check if matrix A is squre - the nummber of rows and columns are equal, m=n. 
+    Check if matrix A is squre - the nummber of rows and columns are equal, m=n. 
     """
     m,n = shape(A)
     return m == n
 
 def trace(A):
     """
-        Find the trace of matrix A.
-        Trace operation defined for square matrices only.
+    Find the trace of matrix A.
+    Trace operation defined for square matrices only.
     """
     trace = 0
     if is_square(A):

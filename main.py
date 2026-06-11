@@ -32,8 +32,11 @@ v = [5,12,6]
 #print(angle_between(u,v))
 
 A = [[1,2],[3,4]]
-B = [[1,0,-7],[1,-2,5],[2,3,10]]
-
+B = [
+    [1, 2, 3, 4],
+    [3, 4, 5, 6],
+    [5, 6, 7, 9]
+]
 #print(is_square(A))
 #print(trace(B))
 
@@ -42,3 +45,9 @@ B = [[1,0,-7],[1,-2,5],[2,3,10]]
 #print(A)
 
 #print (forward_elimination(augment_matrix(B,v)))
+
+augmented = augment_matrix(B, v)
+echelon_matrix, pivot_columns = forward_elimination(augmented)
+
+print(echelon_matrix)
+print(pivot_columns)

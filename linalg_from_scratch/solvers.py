@@ -74,7 +74,7 @@ def find_pivot_row(A, pivot_column, start_row, tolerance=1e-12):
 
     return best_row
 
-def forward_elimination(augmented):
+def forward_elimination_square_only(augmented):
     """
     Convert the augmented matrix [A | b] into upper triangular form.
     Assumes A is a square matrix. 
@@ -110,6 +110,51 @@ def forward_elimination(augmented):
             add_scaled_row(A, pivot_index, row_below, factor)
 
     return A
+
+def forward_elimination (augmented, tolerance=1e-12):
+    """
+    Converts an augmented matrix [A|b] in row echelon form.
+    Works for any matrix shape (i.e, square, tall, etc).
+    Returns:
+    A: the row echelon form of the augmented matrix.
+    pivot_columns: list of columns where pivots were found. 
+    """
+    A = copy_matrix(augmented)
+
+    rows, columns = shape(A)
+
+    num_of_variable_columns = columns - 1 #last column is vector b
+
+    pivot_row = 0
+    pivot_columns = []
+
+    for pivot_column in range(num_of_variable_columns):
+        if pivot_row >= rows:
+            break
+
+        try:
+            best_row = find_pivot_row(
+                A, 
+                pivot_column=pivot_column,
+                start_row=pivot_row,
+                tolerance=tolerance
+                )
+        except ValueError:
+            continue
+
+        if best_row != pivot_row:
+            swap_rows(A, pivot_row, best_row)
+        
+        pivot = A[pivot_row][pivot_column]
+
+        for row_below in range(pivot_row + 1, rows):
+            factor = -A[row_below][pivot_column] / pivot
+            add_scaled_row(A, pivot_row, row_below, factor)
+        
+        pivot_columns.append(pivot_column)
+        pivot_row += 1
+
+    return A, pivot_columns
 
 def back_substitution(upper_triangular_augmented, tolerance=1e-12):
     """

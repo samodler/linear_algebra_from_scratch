@@ -205,7 +205,10 @@ def solve_linear_system(A, b):
 
     augmented = augment_matrix(A, b)
 
-    upper_triangular = forward_elimination(augmented)
+    upper_triangular, pivot_columns = forward_elimination(augmented)
+    
+    if len(pivot_columns) != columns:
+        raise ValueError("Matrix is singular or nearly singular.")
 
     solution = back_substitution(upper_triangular)
 

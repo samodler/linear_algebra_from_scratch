@@ -1,4 +1,5 @@
-from linalg_from_scratch.vectors import dot_product
+from linalg_from_scratch.vectors import *
+from linalg_from_scratch.row_operations import *
 
 def shape (A):
     """
@@ -18,6 +19,43 @@ def shape (A):
         if len(row) != n:
             raise ValueError("All rows must have the same length.")
     return m, n
+
+def is_ref(A, tolerance=1e-12):
+    """
+    Check whether a matrix is in row echelon form.
+
+    A matrix is in row echelon form if:
+    1. All zero rows are below all nonzero rows.
+    2. Leading entries move strictly to the right as we go down.
+    3. Entries below each leading entry are zero.
+    """
+    previous_pivot_col = -1
+    seen_zero_row = False
+
+    for i, row in enumerate(A):
+        pivot_col = leading_entry_index(row, tolerance=tolerance)
+
+        # current row is a zero row
+        if pivot_col is None:
+            seen_zero_row = True
+            continue
+
+        # nonzero row appears after a zero row
+        if seen_zero_row:
+            return False
+
+        # pivot columns must move strictly to the right
+        if pivot_col <= previous_pivot_col:
+            return False
+
+        # entries below pivot must be zero
+        for k in range(i + 1, len(A)):
+            if abs(A[k][pivot_col]) > tolerance:
+                return False
+
+        previous_pivot_col = pivot_col
+
+    return True
 
 def zeros(m, n):
     """
@@ -130,21 +168,6 @@ def matrix_multiply(A, B):
 
     return result
 
-def get_column(A, column_index):
-    """
-    Extract one column from a matrix.
-    """
-    m, n = shape(A)
-
-    if column_index < 0 or column_index >= n:
-        raise IndexError("Column index is out of range.")
-
-    column = []
-
-    for i in range(m):
-        column.append(A[i][column_index])
-
-    return column
 
 def is_square(A):
     """
@@ -165,3 +188,14 @@ def trace(A):
     else:
         raise ValueError("Trace operation is only defined for square matrices.")
     return trace
+
+def copy_matrix(A):
+    """
+    Create a deep copy of a matrix.
+    """
+    copy = []
+
+    for row in A:
+        copy.append(row.copy())
+
+    return copy

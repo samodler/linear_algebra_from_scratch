@@ -1,31 +1,6 @@
-from linalg_from_scratch.vectors import (
-    add_vectors,
-    subtract_vectors,
-    scalar_mult,
-    dot_product,
-    norm,
-    distance,
-    normalise,
-    are_orthogonal,
-    angle_between
-)
-
-from linalg_from_scratch.matrices import (
-    shape,
-    identity,
-    transpose,
-    add_matrices,
-    scalar_multiply_matrix,
-    matrix_vector_multiply,
-    matrix_multiply,
-    is_square,
-    trace
-)
-from linalg_from_scratch.solvers import (
-    augment_matrix,
-    forward_elimination,
-    solve_linear_system,
-)
+from linalg_from_scratch.vectors import *
+from linalg_from_scratch.matrices import *
+from linalg_from_scratch.solvers import *
 
 u = [3,4]
 v = [5,12,6]
@@ -46,8 +21,58 @@ B = [
 
 #print (forward_elimination(augment_matrix(B,v)))
 
-augmented = augment_matrix(B, v)
-echelon_matrix, pivot_columns = forward_elimination(augmented)
+#augmented = augment_matrix(B, v)
 
-print(echelon_matrix)
-print(pivot_columns)
+#res_augmented = forward_elimination_augmented(augmented)
+#print(res_augmented.matrix)
+#print(res_augmented.rank)
+
+#res = forward_elimination(B)
+#print(res.matrix)
+#print(res.rank)
+
+#print(echelon_matrix)
+#print(pivot_columns)
+
+A = [
+    [1, 2, 3],
+    [0, 4, 5],
+    [0, 0, 6]
+]
+
+#ref = forward_elimination(A)
+#print(ref.matrix)
+#print(ref.rank)
+#print(ref.row_swaps)
+
+print(is_ref(A))
+
+A = [
+    [1, 2, 3],
+    [0, 4, 5],
+    [0, 0, 0]
+]
+print(is_ref(A))
+
+A = [
+    [0, 2, 3],
+    [0, 4, 5],
+    [0, 0, 0]
+]
+
+print(is_ref(A))
+
+A = [
+    [1, 2, 3],
+    [0, 0, 5],
+    [0, 5, 0]
+]
+
+print(is_ref(A))
+
+A = [
+    [0, 2, 3],
+    [0, 0, 5],
+    [0, 0, 0]
+]
+print(is_ref(A))

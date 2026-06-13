@@ -2,8 +2,8 @@
 
 from dataclasses import dataclass
 
-from linalg_from_scratch.matrices import shape, copy_matrix
-from linalg_from_scratch.row_operations import swap_rows, add_scaled_row
+from linalg_from_scratch.matrices import *
+from row_operations import *
 
 
 @dataclass
@@ -13,6 +13,57 @@ class EliminationResult:
     row_swaps: int
     rank: int
 
+def is_ref(A, tolerance=1e-12):
+    """
+    Check whether a matrix is in row echelon form.
+
+    A matrix is in row echelon form if:
+    1. All zero rows are below all nonzero rows.
+    2. Leading entries move strictly to the right as we go down.
+    3. Entries below each leading entry are zero.
+    """
+    previous_pivot_col = -1
+    seen_zero_row = False
+
+    for i, row in enumerate(A):
+        pivot_col = leading_entry_index(row, tolerance=tolerance)
+
+        # current row is a zero row
+        if pivot_col is None:
+            seen_zero_row = True
+            continue
+
+        # nonzero row appears after a zero row
+        if seen_zero_row:
+            return False
+
+        # pivot columns must move strictly to the right
+        if pivot_col <= previous_pivot_col:
+            return False
+
+        # entries below pivot must be zero
+        for k in range(i + 1, len(A)):
+            if abs(A[k][pivot_col]) > tolerance:
+                return False
+
+        previous_pivot_col = pivot_col
+
+    return True
+
+def rank(A, tolerance=1e-12):
+    """
+    Compute the rank of a matrix.
+
+    If A is already in row echelon form, count the nonzero rows.
+    Otherwise, perform forward elimination and return the number of pivots.
+    """
+    if is_ref(A, tolerance=tolerance):
+        return sum(
+            leading_entry_index(row, tolerance=tolerance) is not None
+            for row in A
+        )
+
+    return forward_elimination(A, tolerance=tolerance).rank
 
 def find_pivot_row(A, pivot_column, start_row, tolerance=1e-12):
     """
@@ -32,6 +83,80 @@ def find_pivot_row(A, pivot_column, start_row, tolerance=1e-12):
         raise ValueError("Matrix is singular or nearly singular.")
 
     return best_row
+
+def forward_elimination (A, tolerance=1e-12):
+    """
+    Converts matrix A in row echelon form.
+
+    Works for rectangular systems as well as square systems.
+
+
+    Returns
+    -------
+    EliminationResult
+        A dataclass instance containing:
+        - matrix: the row echelon form of the augmented matrix
+        - pivot_columns: a list of variable-column indices where pivots were found
+        - row_swaps: the number of row swaps performed
+        - rank: the number of pivots found
+    """
+    matrix_copy = copy_matrix(A)
+
+    rows, columns = shape(matrix_copy)
+
+    if is_ref(matrix_copy, tolerance=tolerance):
+        pivot_columns = [
+            leading_entry_index(row, tolerance=tolerance)
+            for row in matrix_copy
+            if leading_entry_index(row, tolerance=tolerance) is not None
+        ]
+
+        return EliminationResult(
+            matrix=matrix_copy,
+            pivot_columns=pivot_columns,
+            row_swaps=0,
+            rank=len(pivot_columns),
+        )
+
+
+    pivot_row = 0
+    pivot_columns = []
+    row_swaps = 0
+
+    for pivot_column in range(columns):
+        if pivot_row >= rows:
+            break
+
+        try:
+            best_row = find_pivot_row(
+                matrix_copy, 
+                pivot_column=pivot_column,
+                start_row=pivot_row,
+                tolerance=tolerance
+                )
+        except ValueError:
+            continue
+
+        if best_row != pivot_row:
+            swap_rows(matrix_copy, pivot_row, best_row)
+            row_swaps += 1
+        
+        pivot = matrix_copy[pivot_row][pivot_column]
+
+        for row_below in range(pivot_row + 1, rows):
+            factor = -matrix_copy[row_below][pivot_column] / pivot
+            add_scaled_row(matrix_copy, pivot_row, row_below, factor)
+        
+        pivot_columns.append(pivot_column)
+        pivot_row += 1
+
+    return EliminationResult(
+        matrix=matrix_copy,
+        pivot_columns=pivot_columns,
+        row_swaps=row_swaps,
+        rank=len(pivot_columns),
+    )
+
 
 def forward_elimination_augmented (augmented, tolerance=1e-12):
     """
@@ -88,64 +213,6 @@ def forward_elimination_augmented (augmented, tolerance=1e-12):
 
     return EliminationResult(
         matrix=A,
-        pivot_columns=pivot_columns,
-        row_swaps=row_swaps,
-        rank=len(pivot_columns),
-    )
-
-def forward_elimination (A, tolerance=1e-12):
-    """
-    Converts matrix A in row echelon form.
-
-    Works for rectangular systems as well as square systems.
-
-
-    Returns
-    -------
-    EliminationResult
-        A dataclass instance containing:
-        - matrix: the row echelon form of the augmented matrix
-        - pivot_columns: a list of variable-column indices where pivots were found
-        - row_swaps: the number of row swaps performed
-        - rank: the number of pivots found
-    """
-    matrix_copy = copy_matrix(A)
-
-    rows, columns = shape(matrix_copy)
-
-    pivot_row = 0
-    pivot_columns = []
-    row_swaps = 0
-
-    for pivot_column in range(columns):
-        if pivot_row >= rows:
-            break
-
-        try:
-            best_row = find_pivot_row(
-                matrix_copy, 
-                pivot_column=pivot_column,
-                start_row=pivot_row,
-                tolerance=tolerance
-                )
-        except ValueError:
-            continue
-
-        if best_row != pivot_row:
-            swap_rows(matrix_copy, pivot_row, best_row)
-            row_swaps += 1
-        
-        pivot = matrix_copy[pivot_row][pivot_column]
-
-        for row_below in range(pivot_row + 1, rows):
-            factor = -matrix_copy[row_below][pivot_column] / pivot
-            add_scaled_row(matrix_copy, pivot_row, row_below, factor)
-        
-        pivot_columns.append(pivot_column)
-        pivot_row += 1
-
-    return EliminationResult(
-        matrix=matrix_copy,
         pivot_columns=pivot_columns,
         row_swaps=row_swaps,
         rank=len(pivot_columns),

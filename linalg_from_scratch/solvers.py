@@ -1,6 +1,16 @@
+from dataclasses import dataclass
+
 from linalg_from_scratch.matrices import *
 from linalg_from_scratch.elimination import *
 from linalg_from_scratch.row_operations import *
+
+@dataclass
+class LinearSystemClassification:
+    status: str
+    rank_A: int
+    rank_augmented: int
+    number_of_variables: int
+
 
 def augment_matrix(A, b):
     """
@@ -70,3 +80,38 @@ def solve_linear_system(A, b):
     solution = back_substitution(elimination_result.matrix)
 
     return solution
+
+def classify_linear_system(A, b):
+    """
+    Classify the linear system Ax = b.
+
+    Returns:
+        LinearSystemClassification with status:
+        - "unique"
+        - "infinite"
+        - "inconsistent"
+    """
+    rows, columns = shape(A)
+
+    if len(b) != rows:
+        raise ValueError("Length of b must match the number of rows of A.")
+
+    augmented = augment_matrix(A, b)
+
+    rank_A = rank(A)
+    rank_augmented = rank(augmented)
+    number_of_variables = columns
+
+    if rank_A < rank_augmented:
+        status = "inconsistent"
+    elif rank_A == rank_augmented == number_of_variables:
+        status = "unique"
+    else:
+        status = "infinite"
+
+    return LinearSystemClassification(
+        status=status,
+        rank_A=rank_A,
+        rank_augmented=rank_augmented,
+        number_of_variables=number_of_variables,
+    )

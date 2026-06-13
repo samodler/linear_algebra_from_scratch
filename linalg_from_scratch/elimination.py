@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 from linalg_from_scratch.matrices import *
-from row_operations import *
+from linalg_from_scratch.row_operations import *
 
 
 @dataclass
@@ -174,11 +174,27 @@ def forward_elimination_augmented (augmented, tolerance=1e-12):
         - row_swaps: the number of row swaps performed
         - rank: the number of pivots found
     """
-    A = copy_matrix(augmented)
+    augmented_copy = copy_matrix(augmented)
 
-    rows, columns = shape(A)
+    rows, columns = shape(augmented_copy)
 
     num_of_variable_columns = columns - 1 #last column is vector b
+
+    if is_ref(augmented_copy, tolerance=tolerance):
+        pivot_columns = []
+
+        for row in augmented_copy:
+            pivot_column = leading_entry_index(row, tolerance=tolerance)
+
+            if pivot_column is not None and pivot_column < num_of_variable_columns:
+                pivot_columns.append(pivot_column)
+
+        return EliminationResult(
+            matrix=augmented_copy,
+            pivot_columns=pivot_columns,
+            row_swaps=0,
+            rank=len(pivot_columns),
+        )
 
     pivot_row = 0
     pivot_columns = []
@@ -190,7 +206,7 @@ def forward_elimination_augmented (augmented, tolerance=1e-12):
 
         try:
             best_row = find_pivot_row(
-                A, 
+                augmented_copy, 
                 pivot_column=pivot_column,
                 start_row=pivot_row,
                 tolerance=tolerance
@@ -199,20 +215,20 @@ def forward_elimination_augmented (augmented, tolerance=1e-12):
             continue
 
         if best_row != pivot_row:
-            swap_rows(A, pivot_row, best_row)
+            swap_rows(augmented_copy, pivot_row, best_row)
             row_swaps += 1
         
-        pivot = A[pivot_row][pivot_column]
+        pivot = augmented_copy[pivot_row][pivot_column]
 
         for row_below in range(pivot_row + 1, rows):
-            factor = -A[row_below][pivot_column] / pivot
-            add_scaled_row(A, pivot_row, row_below, factor)
+            factor = -augmented_copy[row_below][pivot_column] / pivot
+            add_scaled_row(augmented_copy, pivot_row, row_below, factor)
         
         pivot_columns.append(pivot_column)
         pivot_row += 1
 
     return EliminationResult(
-        matrix=A,
+        matrix=augmented_copy,
         pivot_columns=pivot_columns,
         row_swaps=row_swaps,
         rank=len(pivot_columns),
